@@ -1,0 +1,55 @@
+experiment_name: smoke_align_check
+output_root: ./runs
+data:
+  root: ./data/xlx_clean_smoke
+model:
+  in_channels: 3
+  out_channels: 3
+  downscale_factor: 4
+  rep_scale: 4
+  only_train_y: true
+  pretrain_path: /mnt/d/fudan/AI前滤波_原版/AI前滤波_V0302/AI-PreFilter/weights/iccv_yan_2025_fp32.pth
+  strict_load: true
+train:
+  seed: 123
+  device: cpu
+  batch_size: 1
+  val_batch_size: 1
+  num_workers: 0
+  crop_size: 224
+  hflip: true
+  lr: 0.0003
+  min_lr: 1.0e-06
+  weight_decay: 1.0e-06
+  total_iter: 1
+  warmup_iter: 1
+  mixed_precision: false
+  resume: auto
+  fidelity_loss:
+    enabled: true
+    loss_weight: 1.0
+    eps: 1.0e-12
+    roi_weight: 20.0
+    non_roi_weight: 1.0
+  perceptual_loss:
+    enabled: true
+    loss_weight: 0.16
+    data_range: 1.0
+    win_size: 11
+    win_sigma: 1.5
+  scheduler:
+    T_max: 97000
+    eta_min: 1.0e-06
+logger:
+  print_freq: 1
+  val_freq: 1
+  save_latest_freq: 1
+  save_checkpoint_freq: 1
+
+validation:
+  primary_metric: selective_score
+  primary_higher_is_better: true
+  selective_metric:
+    enabled: true
+    mask_mode: detail_gain
+    s_thr: 0.25
