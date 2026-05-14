@@ -1,6 +1,6 @@
-# Training Package
+# Training
 
-本目录是上传用训练包，包含训练代码、正式配置、实际运行 config、指标摘要、checkpoint、raw-Y ONNX 和评估记录。
+本目录包含训练代码、正式配置、实际运行 config、指标摘要、checkpoint、raw-Y ONNX 和评估记录。
 
 推荐优先阅读：
 
@@ -21,6 +21,26 @@ test SSIM = 0.969035
 ```
 
 如资源允许并且希望优先追求精度，可参考 `task_qat_w12_b14_noedge_shift11`；如优先压缩位宽，可参考 `task_qat_w10_b12_noedge_shift9`，但它的精度下降更明显。
+
+## 当前 noedge 版本说明
+
+当前正式推荐线是 `task_qat_*_noedge`。这里的 `noedge` 指最终 Task-QAT 模型不启用 `EdgeConsistencyLoss`，最终选型也不使用 `selective_score` 作为 best checkpoint 或模型选择指标。
+
+这个选择来自实际编码后的效果判断：加入 edge loss 和使用 selective score 作为验证目标时，未编码前的结果会更强调边缘保留；但在实际视频编码后，尤其 QP 较大时，noedge 模型的综合观感和编码后效果更好。noedge 模型在编码前会相对更接近 reference filtering target，最终评估更关注编码后的实际表现，以及 PSNR/SSIM 等稳定参考指标。
+
+旧的 edge loss 和 `selective_score` 主线仍保留在本文档中，用于说明历史训练设计、指标定义和对比依据。当前 noedge 配置是在这条主线之后确定的部署选择。
+
+当前 noedge 配置的关键差异：
+
+```yaml
+train:
+  edge_aux_loss:
+    enabled: false
+
+validation:
+  selective_metric:
+    enabled: false
+```
 
 # W10+B13 Prefilter 训练与部署指南
 
@@ -503,6 +523,8 @@ pred 在这些位置保留 source 的边缘强度和方向。
 
 该损失不约束 `pred` 的边缘梯度追随 `target/ref`；`target/ref` 仅用于生成边缘区域权重。
 
+当前 `task_qat_*_noedge` 正式线不启用 `EdgeConsistencyLoss`。保留本节是为了记录早期 edge 版本的 loss 设计和对照逻辑；noedge 版本关闭该项后，模型在未编码前更接近 reference target，实际编码后尤其大 QP 场景下表现更稳定。
+
 ## 8. FP32 训练
 
 FP32 阶段训练 `PrefilterNet`，得到 QAT 初始化用 checkpoint。交付目录内已包含训练好的 FP32 checkpoint：
@@ -748,3 +770,5 @@ selective_score = 100 * (
 ```
 
 因此 `best.pt` 对应任务指标最优，不保证同时取得最高 PSNR/SSIM。`selective_score` 包含结构 mask、分位数、clip 等非平滑流程，用于验证指标和 best checkpoint 选择，不作为训练主 loss。
+
+当前 `task_qat_*_noedge` 正式线不使用 `selective_score` 作为最终选型指标。`selective_score` 仍作为历史 edge 主线的验证指标保留在文档中；noedge 版本的最终判断基于实际编码后的表现，并结合 PSNR/SSIM 等更稳定的参考指标。

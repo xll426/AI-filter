@@ -1,41 +1,67 @@
-# Deployment Package
+# Deployment
 
-本目录是上传用部署包，主线模型为 `task_qat_w11_b13_noedge_shift10`。它修正了早期 `调试滤波工具v0` 的 block 推理方式：不再把整帧拆成 32x32 block 分别送入 ONNX，而是整帧 Y 一次推理，避免 block 边界拼接伪影。
+This directory contains the deployment package for the current AI Filter noedge release. It includes residual ONNX models, integer sidecar parameters, export scripts, verification summaries, and the full-frame YUV inference tool.
 
-## Contents
+## Current Model
+
+The recommended deployment model is:
+
+```text
+models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
+models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
+models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
+```
+
+Model configuration:
+
+```text
+experiment: task_qat_w11_b13_noedge_shift10
+weight bits: W11
+bias bits: B13
+shift: 10
+training loss line: noedge, no EdgeConsistencyLoss
+evaluation line: no selective_score for final noedge selection
+```
+
+The noedge model is selected for practical post-encoding quality. It performs better after actual video encoding at larger QP values, while remaining closer to the reference filtering target before encoding.
+
+## Directory Layout
 
 ```text
 models/
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
-  other exported comparison models
+  other comparison ONNX exports
 
 infer_block_rate_yuv.py
-  Main full-frame ONNX residual inference script.
+  Main full-frame residual ONNX inference script.
 
 debug_filter_tool/
-  Minimal fixed debug tool version, equivalent to the cleaned v2 package.
+  Minimal debug package using the same full-frame inference logic.
 
 outputs/*/summary.*
-  ONNX vs PyTorch consistency summaries. Large YUV outputs are intentionally not included.
+  ONNX/PyTorch consistency summary files.
+
+rate_maps/
+  Example rate-map files retained for block-rate experiments.
 
 EVALUATION_SUMMARY.md
-  Model selection and evaluation notes copied from the training record.
+  Deployment-side copy of the model-selection summary.
 ```
 
-Large raw sample videos and full generated YUV outputs are excluded from the upload package. Put local inputs under `data/`, or pass an absolute path with `--input`.
+Large raw input videos and full generated YUV outputs are intentionally not stored in this directory. Local input files can be placed under `data/` or passed with `--input`.
 
-## Model Semantics
+## ONNX Semantics
 
-The ONNX model consumes raw luma values:
+The ONNX model outputs a residual. It does not add the residual back to the source frame.
 
 ```text
 input  = raw 0..255 Y, float32 NCHW [N,1,H,W]
 output = raw residual delta_y, float32 NCHW [N,1,H,W]
 ```
 
-Internal integer path:
+Integer path inside the ONNX graph:
 
 ```text
 Y_u     = PixelUnshuffle4(Y)
@@ -44,39 +70,23 @@ delta_u = round(acc / 2^10)
 delta_y = PixelShuffle4(delta_u)
 ```
 
-Runtime applies the residual outside ONNX:
+Runtime composition:
 
 ```text
 Y_out = clip(round(Y + rate * delta_y), 0, 255)
 ```
 
-Chroma bytes are not decoded and are copied back unchanged. For 8-bit 4:2:0 files, `yuv420p` and `nv12` both have `width * height / 2` chroma bytes, so the tool can pass either format through as long as the Y plane and frame size are correct.
+Chroma bytes are copied unchanged. The script only parses the Y plane and treats the chroma payload as raw bytes. For 8-bit 4:2:0 inputs, both `yuv420p` and `nv12` have the same frame byte size.
 
-## Recommended Model
+## Inference
 
-```text
-models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
-models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
-models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
-```
-
-Integer parameters:
-
-```text
-q_w: signed W11, range -1024..1023, actual -466..76
-q_b: signed B13, range -4096..4095, actual -1989..-119
-shift: 10
-```
-
-## Run Inference
-
-Install minimal dependencies:
+Install minimal runtime dependencies:
 
 ```bash
 pip install numpy onnxruntime
 ```
 
-Default command:
+Run full-frame inference:
 
 ```bash
 python infer_block_rate_yuv.py \
@@ -86,7 +96,7 @@ python infer_block_rate_yuv.py \
   --output outputs/kaideo_2560x1440_yuv420p_0_w11_b13_shift10_rate1.yuv
 ```
 
-Use a different residual strength:
+Adjust residual strength:
 
 ```bash
 python infer_block_rate_yuv.py \
@@ -97,7 +107,7 @@ python infer_block_rate_yuv.py \
   --rate 0.5
 ```
 
-Use a different ONNX:
+Use another ONNX model:
 
 ```bash
 python infer_block_rate_yuv.py \
@@ -106,9 +116,9 @@ python infer_block_rate_yuv.py \
   --output outputs/output.yuv
 ```
 
-## Validation Record
+## Verification
 
-`outputs/kaideo_full_onnx_pytorch_compare_rate1/summary.md` records the full-video ONNX vs PyTorch check:
+`outputs/kaideo_full_onnx_pytorch_compare_rate1/summary.md` records a full-video ONNX/PyTorch consistency check:
 
 | model | frames | max abs Y diff | diff Y pixels |
 |---|---:|---:|---:|
@@ -116,4 +126,4 @@ python infer_block_rate_yuv.py \
 | `teacher_qat_w10_b12` | 100 | 0 | 0 |
 | `fudan_fp16` | 100 | 1 | 615 |
 
-The final W11/B13 shift10 model is exported as an integer residual ONNX. Its model selection and training metrics are summarized in `EVALUATION_SUMMARY.md`.
+The selected `task_qat_w11_b13_noedge_shift10` model is an integer residual ONNX with separate integer parameter metadata. Training metrics and model-selection details are recorded in `EVALUATION_SUMMARY.md`.
