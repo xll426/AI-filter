@@ -1,10 +1,10 @@
-# Deployment
+# 部署说明
 
-This directory contains the deployment package for the current AI Filter noedge release. It includes residual ONNX models, integer sidecar parameters, export scripts, verification summaries, and the full-frame YUV inference tool.
+本目录包含当前 AI Filter noedge 版本的部署文件，包括 residual ONNX 模型、整数参数 sidecar、导出脚本、一致性验证摘要和整帧 YUV 推理工具。
 
-## Current Model
+## 当前推荐模型
 
-The recommended deployment model is:
+推荐部署模型：
 
 ```text
 models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
@@ -12,56 +12,56 @@ models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
 models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
 ```
 
-Model configuration:
+模型配置：
 
 ```text
 experiment: task_qat_w11_b13_noedge_shift10
 weight bits: W11
 bias bits: B13
 shift: 10
-training loss line: noedge, no EdgeConsistencyLoss
-evaluation line: no selective_score for final noedge selection
+训练主线: noedge，不启用 EdgeConsistencyLoss
+评估主线: noedge 最终选型不使用 selective_score
 ```
 
-The noedge model is selected for practical post-encoding quality. It performs better after actual video encoding at larger QP values, while remaining closer to the reference filtering target before encoding.
+`noedge` 模型是当前实际部署推荐线。选择原因是实际视频编码后，尤其 QP 较大时，noedge 模型的综合观感和编码后效果更好；未编码前它会相对更接近 reference filtering target。
 
-## Directory Layout
+## 目录结构
 
 ```text
 models/
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
-  other comparison ONNX exports
+  其他对比模型 ONNX
 
 infer_block_rate_yuv.py
-  Main full-frame residual ONNX inference script.
+  主推理脚本，整帧 Y 输入 ONNX，输出 residual 后在脚本中加回原始 Y。
 
 debug_filter_tool/
-  Minimal debug package using the same full-frame inference logic.
+  精简调试工具，使用同样的整帧推理逻辑。
 
 outputs/*/summary.*
-  ONNX/PyTorch consistency summary files.
+  ONNX/PyTorch 一致性验证摘要。
 
 rate_maps/
-  Example rate-map files retained for block-rate experiments.
+  block-rate 实验保留的示例 rate map。
 
 EVALUATION_SUMMARY.md
-  Deployment-side copy of the model-selection summary.
+  部署侧模型选型和指标摘要。
 ```
 
-Large raw input videos and full generated YUV outputs are intentionally not stored in this directory. Local input files can be placed under `data/` or passed with `--input`.
+大体积原始 YUV 和完整输出 YUV 不放在本目录内。需要推理时，可将本地输入放到 `data/`，或通过 `--input` 指定实际路径。
 
-## ONNX Semantics
+## ONNX 语义
 
-The ONNX model outputs a residual. It does not add the residual back to the source frame.
+ONNX 输出的是 Y 域残差，不在图内加回原始 Y。
 
 ```text
 input  = raw 0..255 Y, float32 NCHW [N,1,H,W]
 output = raw residual delta_y, float32 NCHW [N,1,H,W]
 ```
 
-Integer path inside the ONNX graph:
+ONNX 内部整数路径：
 
 ```text
 Y_u     = PixelUnshuffle4(Y)
@@ -70,23 +70,23 @@ delta_u = round(acc / 2^10)
 delta_y = PixelShuffle4(delta_u)
 ```
 
-Runtime composition:
+外部推理合成：
 
 ```text
 Y_out = clip(round(Y + rate * delta_y), 0, 255)
 ```
 
-Chroma bytes are copied unchanged. The script only parses the Y plane and treats the chroma payload as raw bytes. For 8-bit 4:2:0 inputs, both `yuv420p` and `nv12` have the same frame byte size.
+脚本只解析 Y 平面，chroma 字节不参与模型计算并原样透传。对于 8-bit 4:2:0 输入，`yuv420p` 和 `nv12` 的单帧字节数一致，只要宽高和 Y 平面正确，chroma 会按原字节拼回。
 
-## Inference
+## 推理命令
 
-Install minimal runtime dependencies:
+安装最小运行依赖：
 
 ```bash
 pip install numpy onnxruntime
 ```
 
-Run full-frame inference:
+整帧推理：
 
 ```bash
 python infer_block_rate_yuv.py \
@@ -96,7 +96,7 @@ python infer_block_rate_yuv.py \
   --output outputs/kaideo_2560x1440_yuv420p_0_w11_b13_shift10_rate1.yuv
 ```
 
-Adjust residual strength:
+调整 residual 强度：
 
 ```bash
 python infer_block_rate_yuv.py \
@@ -107,7 +107,7 @@ python infer_block_rate_yuv.py \
   --rate 0.5
 ```
 
-Use another ONNX model:
+指定其他 ONNX：
 
 ```bash
 python infer_block_rate_yuv.py \
@@ -116,9 +116,9 @@ python infer_block_rate_yuv.py \
   --output outputs/output.yuv
 ```
 
-## Verification
+## 验证记录
 
-`outputs/kaideo_full_onnx_pytorch_compare_rate1/summary.md` records a full-video ONNX/PyTorch consistency check:
+`outputs/kaideo_full_onnx_pytorch_compare_rate1/summary.md` 记录了完整视频 ONNX/PyTorch 一致性检查：
 
 | model | frames | max abs Y diff | diff Y pixels |
 |---|---:|---:|---:|
@@ -126,4 +126,4 @@ python infer_block_rate_yuv.py \
 | `teacher_qat_w10_b12` | 100 | 0 | 0 |
 | `fudan_fp16` | 100 | 1 | 615 |
 
-The selected `task_qat_w11_b13_noedge_shift10` model is an integer residual ONNX with separate integer parameter metadata. Training metrics and model-selection details are recorded in `EVALUATION_SUMMARY.md`.
+当前选定的 `task_qat_w11_b13_noedge_shift10` 是整数 residual ONNX，并配套保存整数参数和导出元数据。训练指标与模型选择细节见 `EVALUATION_SUMMARY.md`。
