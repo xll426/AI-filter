@@ -1,0 +1,17 @@
+{
+  "weight_bits": 10,
+  "bias_bits": 13,
+  "downscale_factor": 4,
+  "only_train_y": true,
+  "per_channel_shift": true,
+  "weight_qmin": -512,
+  "weight_qmax": 511,
+  "bias_qmin": -4096,
+  "bias_qmax": 4095,
+  "shift_min": 10,
+  "shift_max": 10,
+  "input_domain": "normalized [0,1], internally converted to raw uint8 semantics [0,255]",
+  "integer_formula": "delta = round((conv(pixel_unshuffle(Y_raw), q_w) + q_b) / 2^shift)",
+  "residual_formula": "Y_u_out = clip(round(Y_u + delta), 0, 255)",
+  "bias_domain": "q_b is quantized from raw-domain bias_fp_raw = bias_norm * 255"
+}

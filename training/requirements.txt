@@ -1,0 +1,7 @@
+numpy
+opencv-contrib-python-headless
+PyYAML
+torch
+pytorch_msssim
+ultralytics
+onnx

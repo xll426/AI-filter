@@ -1,0 +1,77 @@
+experiment_name: task_qat_w12_b14_noedge
+output_root: /mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs
+
+data:
+  root: /mnt/d/fudan/prefilter_clean/data/xlx_clean_roi_512
+
+model:
+  in_channels: 3
+  out_channels: 3
+  downscale_factor: 4
+  rep_scale: 4
+  only_train_y: true
+  pretrain_path: /mnt/d/fudan/prefilter_clean/weights/iccv_yan_2025_fp32.pth
+  strict_load: true
+
+int_qat:
+  weight_bits: 12
+  bias_bits: 14
+  per_channel_shift: true
+  min_shift: 0
+  max_shift: 30
+  weight_range_penalty: 1.0e-6
+  bias_range_penalty: 1.0e-6
+  bias_l1_weight: 0.0
+  export_best: true
+  export_latest: true
+  distillation:
+    enabled: false
+    loss_weight: 0.1
+    only_y: true
+    use_charbonnier: false
+    eps: 1.0e-12
+
+train:
+  seed: 123
+  device: cuda
+  batch_size: 16
+  val_batch_size: 8
+  num_workers: 0
+  crop_size: 224
+  hflip: true
+  lr: 3.0e-6
+  min_lr: 5.0e-7
+  weight_decay: 1.0e-6
+  total_iter: 8000
+  warmup_iter: 300
+  mixed_precision: false
+  resume: none
+  fidelity_loss:
+    enabled: true
+    loss_weight: 1.0
+    eps: 1.0e-12
+    roi_weight: 20.0
+    non_roi_weight: 1.0
+  perceptual_loss:
+    enabled: true
+    loss_weight: 0.16
+    data_range: 1.0
+    win_size: 11
+    win_sigma: 1.5
+  edge_aux_loss:
+    enabled: false
+  scheduler:
+    T_max: 8000
+    eta_min: 5.0e-7
+
+logger:
+  print_freq: 100
+  val_freq: 1000
+  save_latest_freq: 500
+  save_checkpoint_freq: 2000
+
+validation:
+  primary_metric: psnr
+  primary_higher_is_better: true
+  selective_metric:
+    enabled: false

@@ -1,0 +1,317 @@
+[
+  {
+    "config": "teacher_qat_w8_b12.yaml",
+    "experiment": "teacher_qat_w8_b12",
+    "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w8_b12/checkpoints/best.pt",
+    "weight_bits": 8,
+    "bias_bits": 12,
+    "loss_type": "l1",
+    "test_count": 1920,
+    "test_l1": 0.005906089130439796,
+    "test_l2": 4.7889727337254344e-05,
+    "test_psnr": 43.95115083281293,
+    "test_ssim": 0.9852986852017541,
+    "best_val_psnr": 42.40284193195116,
+    "export_stats": {
+      "q_w": {
+        "shape": [
+          16,
+          16,
+          3,
+          3
+        ],
+        "min": -116,
+        "max": 19,
+        "max_abs": 116,
+        "mean_abs": 2.4509549140930176,
+        "zero_count": 833,
+        "numel": 2304
+      },
+      "q_b": {
+        "shape": [
+          16
+        ],
+        "min": -498,
+        "max": -29,
+        "max_abs": 498,
+        "mean_abs": 250.9375,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "shift": {
+        "shape": [
+          16
+        ],
+        "min": 8,
+        "max": 8,
+        "max_abs": 8,
+        "mean_abs": 8.0,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "q_w_usage": 0.9133858267716536,
+      "q_b_usage": 0.2432828529555447,
+      "weight_range": [
+        -128,
+        127
+      ],
+      "bias_range": [
+        -2048,
+        2047
+      ]
+    },
+    "eval_seconds": 286.55830788612366
+  },
+  {
+    "config": "teacher_qat_w10_b12.yaml",
+    "experiment": "teacher_qat_w10_b12",
+    "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w10_b12/checkpoints/best.pt",
+    "weight_bits": 10,
+    "bias_bits": 12,
+    "loss_type": "l1",
+    "test_count": 1920,
+    "test_l1": 0.002377437714797755,
+    "test_l2": 8.29677118190375e-06,
+    "test_psnr": 51.32046114625156,
+    "test_ssim": 0.9973196829979618,
+    "best_val_psnr": 50.12410140328059,
+    "export_stats": {
+      "q_w": {
+        "shape": [
+          16,
+          16,
+          3,
+          3
+        ],
+        "min": -466,
+        "max": 76,
+        "max_abs": 466,
+        "mean_abs": 9.921875,
+        "zero_count": 220,
+        "numel": 2304
+      },
+      "q_b": {
+        "shape": [
+          16
+        ],
+        "min": -1990,
+        "max": -117,
+        "max_abs": 1990,
+        "mean_abs": 1003.9375,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "shift": {
+        "shape": [
+          16
+        ],
+        "min": 10,
+        "max": 10,
+        "max_abs": 10,
+        "mean_abs": 10.0,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "q_w_usage": 0.9119373776908023,
+      "q_b_usage": 0.9721543722520762,
+      "weight_range": [
+        -512,
+        511
+      ],
+      "bias_range": [
+        -2048,
+        2047
+      ]
+    },
+    "eval_seconds": 275.8426842689514
+  },
+  {
+    "config": "teacher_qat_w10_b13.yaml",
+    "experiment": "teacher_qat_w10_b13",
+    "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w10_b13/checkpoints/best.pt",
+    "weight_bits": 10,
+    "bias_bits": 13,
+    "loss_type": "l1",
+    "test_count": 1920,
+    "test_l1": 0.002377437714797755,
+    "test_l2": 8.29677118190375e-06,
+    "test_psnr": 51.32046114625156,
+    "test_ssim": 0.9973196829979618,
+    "best_val_psnr": 50.12409478307675,
+    "export_stats": {
+      "q_w": {
+        "shape": [
+          16,
+          16,
+          3,
+          3
+        ],
+        "min": -466,
+        "max": 76,
+        "max_abs": 466,
+        "mean_abs": 9.921875,
+        "zero_count": 220,
+        "numel": 2304
+      },
+      "q_b": {
+        "shape": [
+          16
+        ],
+        "min": -1990,
+        "max": -117,
+        "max_abs": 1990,
+        "mean_abs": 1003.9375,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "shift": {
+        "shape": [
+          16
+        ],
+        "min": 10,
+        "max": 10,
+        "max_abs": 10,
+        "mean_abs": 10.0,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "q_w_usage": 0.9119373776908023,
+      "q_b_usage": 0.48595848595848595,
+      "weight_range": [
+        -512,
+        511
+      ],
+      "bias_range": [
+        -4096,
+        4095
+      ]
+    },
+    "eval_seconds": 283.73638916015625
+  },
+  {
+    "config": "teacher_qat_w10_b13_l2.yaml",
+    "experiment": "teacher_qat_w10_b13_l2",
+    "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w10_b13_l2/checkpoints/best.pt",
+    "weight_bits": 10,
+    "bias_bits": 13,
+    "loss_type": "l2",
+    "test_count": 1920,
+    "test_l1": 0.00247983598819701,
+    "test_l2": 9.366129420603405e-06,
+    "test_psnr": 50.81998933220113,
+    "test_ssim": 0.9968572701327503,
+    "best_val_psnr": 49.632429470986274,
+    "export_stats": {
+      "q_w": {
+        "shape": [
+          16,
+          16,
+          3,
+          3
+        ],
+        "min": -466,
+        "max": 76,
+        "max_abs": 466,
+        "mean_abs": 9.91579818725586,
+        "zero_count": 215,
+        "numel": 2304
+      },
+      "q_b": {
+        "shape": [
+          16
+        ],
+        "min": -1982,
+        "max": -115,
+        "max_abs": 1982,
+        "mean_abs": 997.25,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "shift": {
+        "shape": [
+          16
+        ],
+        "min": 10,
+        "max": 10,
+        "max_abs": 10,
+        "mean_abs": 10.0,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "q_w_usage": 0.9119373776908023,
+      "q_b_usage": 0.484004884004884,
+      "weight_range": [
+        -512,
+        511
+      ],
+      "bias_range": [
+        -4096,
+        4095
+      ]
+    },
+    "eval_seconds": 297.2023720741272
+  },
+  {
+    "config": "teacher_qat_w12_b14.yaml",
+    "experiment": "teacher_qat_w12_b14",
+    "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w12_b14/checkpoints/best.pt",
+    "weight_bits": 12,
+    "bias_bits": 14,
+    "loss_type": "l1",
+    "test_count": 1920,
+    "test_l1": 0.0013010752993674638,
+    "test_l2": 2.5789581068617434e-06,
+    "test_psnr": 56.04031663890222,
+    "test_ssim": 0.9990602407604456,
+    "best_val_psnr": 55.46905770217814,
+    "export_stats": {
+      "q_w": {
+        "shape": [
+          16,
+          16,
+          3,
+          3
+        ],
+        "min": -1862,
+        "max": 306,
+        "max_abs": 1862,
+        "mean_abs": 39.68619918823242,
+        "zero_count": 51,
+        "numel": 2304
+      },
+      "q_b": {
+        "shape": [
+          16
+        ],
+        "min": -7961,
+        "max": -470,
+        "max_abs": 7961,
+        "mean_abs": 4014.5625,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "shift": {
+        "shape": [
+          16
+        ],
+        "min": 12,
+        "max": 12,
+        "max_abs": 12,
+        "mean_abs": 12.0,
+        "zero_count": 0,
+        "numel": 16
+      },
+      "q_w_usage": 0.9096238397655105,
+      "q_b_usage": 0.9719204004395068,
+      "weight_range": [
+        -2048,
+        2047
+      ],
+      "bias_range": [
+        -8192,
+        8191
+      ]
+    },
+    "eval_seconds": 283.5842032432556
+  }
+]

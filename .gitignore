@@ -1,8 +1,0 @@
-data/
-infer_test_compare/
-__pycache__/
-.codex
-*.pyc
-*.pyo
-*.log
-runs/**/checkpoints/

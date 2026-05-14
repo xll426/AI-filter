@@ -1,0 +1,45 @@
+{
+  "source_checkpoint": "/mnt/d/fudan/prefilter_clean/weights/iccv_yan_2025_deploy_fp16.pth",
+  "model_name": "fudan_iccv_yan_2025_deploy_fp16",
+  "weight_bits": "fp16_source_exported_as_fp32_onnx_constants",
+  "bias_bits": "fp16_source_exported_as_fp32_onnx_constants",
+  "downscale_factor": 4,
+  "dummy_export_height": 32,
+  "dummy_export_width": 32,
+  "dynamic_input_shape": true,
+  "input": "raw 0..255 Y block, float32 NCHW shape [N,1,H,W], H/W must be divisible by 4",
+  "output": "raw residual delta_y block, float32 NCHW shape [N,1,H,W]",
+  "onnx_formula": [
+    "Y_u = PixelUnshuffle4(round_clip_u8(Y))",
+    "delta_u = Conv2D(Y_u, weight_fp, bias_fp_norm * 255)",
+    "delta_y = PixelShuffle4(delta_u)"
+  ],
+  "external_formula": "Y_out_block = clip(round(Y_block + rate_block * delta_y_block), 0, 255)",
+  "weight_fp": {
+    "shape": [
+      16,
+      16,
+      3,
+      3
+    ],
+    "min": -0.45458984375,
+    "max": 0.07464599609375,
+    "max_abs": 0.45458984375
+  },
+  "bias_fp_norm": {
+    "shape": [
+      16
+    ],
+    "min": -0.00762176513671875,
+    "max": -0.0004475116729736328,
+    "max_abs": 0.00762176513671875
+  },
+  "bias_fp_raw": {
+    "shape": [
+      16
+    ],
+    "min": -1.9435501098632812,
+    "max": -0.11411547660827637,
+    "max_abs": 1.9435501098632812
+  }
+}

@@ -1,0 +1,25 @@
+[
+  {
+    "model": "teacher_qat_w10_b12",
+    "input_yuv": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13_delta_block_rate_onnx/data/kaideo_2560x1440_yuv420p_0.yuv",
+    "onnx": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13_delta_block_rate_onnx/models/teacher_qat_w10_b12_delta_raw_dynamic.onnx",
+    "onnx_output": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13_delta_block_rate_onnx/outputs/readme_path_smoke_one_frame/teacher_qat_w10_b12/kaideo_2560x1440_yuv420p_0_onnx_rate1.yuv",
+    "pytorch_output": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13_delta_block_rate_onnx/outputs/readme_path_smoke_one_frame/teacher_qat_w10_b12/kaideo_2560x1440_yuv420p_0_pytorch_rate1.yuv",
+    "frames": 1,
+    "width": 2560,
+    "height": 1440,
+    "format": "yuv420p",
+    "block_size": 32,
+    "block_batch_size": 1024,
+    "rate": 1.0,
+    "output_size_expected": 5529600,
+    "onnx_output_size": 5529600,
+    "pytorch_output_size": 5529600,
+    "max_abs_y_diff": 0,
+    "mean_abs_y_diff": 0.0,
+    "diff_y_pixels": 0,
+    "total_y_pixels": 3686400,
+    "diff_y_ratio": 0.0,
+    "uv_mismatch": false
+  }
+]

@@ -1,0 +1,144 @@
+{
+  "test_split": "/mnt/d/fudan/prefilter_clean/data/xlx_clean_roi_512/test",
+  "note": "Full test set, Y channel only. SSIM omitted here for speed; previous task_qat_noedge_test_summary.md contains task_qat vs reference SSIM.",
+  "metrics": {
+    "input_vs_reference": {
+      "samples": 1920,
+      "psnr": 34.09131882985433,
+      "l1": 0.01847592319439476,
+      "l2": 0.0008677571243121444
+    },
+    "fp32_teacher_vs_reference": {
+      "samples": 1920,
+      "psnr": 36.718060906728105,
+      "l1": 0.012425044710592676,
+      "l2": 0.000384217290320521
+    },
+    "teacher_qat_w10_b12_vs_reference": {
+      "samples": 1920,
+      "psnr": 36.362733872731525,
+      "l1": 0.012723676460639884,
+      "l2": 0.000396438499440895
+    },
+    "teacher_qat_w10_b12_vs_fp32_teacher": {
+      "samples": 1920,
+      "psnr": 51.32046101888021,
+      "l1": 0.002377437718678266,
+      "l2": 8.296771223588924e-06
+    },
+    "teacher_qat_w12_b14_vs_reference": {
+      "samples": 1920,
+      "psnr": 36.561782677968345,
+      "l1": 0.012477755437915523,
+      "l2": 0.0003880687989294529
+    },
+    "teacher_qat_w12_b14_vs_fp32_teacher": {
+      "samples": 1920,
+      "psnr": 56.040316581726074,
+      "l1": 0.001301075308583677,
+      "l2": 2.578958130546501e-06
+    },
+    "task_qat_w10_b12_noedge_vs_reference": {
+      "samples": 1920,
+      "psnr": 36.73029088973999,
+      "l1": 0.012308283833165963,
+      "l2": 0.00038539377304308195
+    },
+    "task_qat_w10_b12_noedge_vs_fp32_teacher": {
+      "samples": 1920,
+      "psnr": 54.5417786916097,
+      "l1": 0.0015351071177671352,
+      "l2": 3.7454080711540883e-06
+    },
+    "task_qat_w12_b14_noedge_vs_reference": {
+      "samples": 1920,
+      "psnr": 36.741851234436034,
+      "l1": 0.012304100553349902,
+      "l2": 0.000385378936152847
+    },
+    "task_qat_w12_b14_noedge_vs_fp32_teacher": {
+      "samples": 1920,
+      "psnr": 54.305101776123045,
+      "l1": 0.0015789237067413827,
+      "l2": 3.970832115858987e-06
+    }
+  },
+  "models": {
+    "teacher_qat_w10_b12": {
+      "kind": "teacher_qat",
+      "config": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/configs/teacher_qat_w10_b12.yaml",
+      "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w10_b12/checkpoints/best.pt",
+      "checkpoint_iter": 1000,
+      "weight_bits": 10,
+      "bias_bits": 12,
+      "q_w_min": -466,
+      "q_w_max": 76,
+      "q_b_min": -1990,
+      "q_b_max": -117,
+      "shift_min": 10.0,
+      "shift_max": 10.0,
+      "max_abs_q_w": 466.0,
+      "max_abs_q_b": 1990.0,
+      "q_w_usage": 0.91015625,
+      "q_b_usage": 0.9716796875,
+      "shift_mean": 10.0
+    },
+    "teacher_qat_w12_b14": {
+      "kind": "teacher_qat",
+      "config": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/configs/teacher_qat_w12_b14.yaml",
+      "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/teacher_qat_w12_b14/checkpoints/best.pt",
+      "checkpoint_iter": 1000,
+      "weight_bits": 12,
+      "bias_bits": 14,
+      "q_w_min": -1862,
+      "q_w_max": 306,
+      "q_b_min": -7961,
+      "q_b_max": -470,
+      "shift_min": 12.0,
+      "shift_max": 12.0,
+      "max_abs_q_w": 1862.0,
+      "max_abs_q_b": 7961.0,
+      "q_w_usage": 0.9091796875,
+      "q_b_usage": 0.9718017578125,
+      "shift_mean": 12.0
+    },
+    "task_qat_w10_b12_noedge": {
+      "kind": "task_qat",
+      "config": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/configs/task_qat_w10_b12_noedge.yaml",
+      "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/task_qat_w10_b12_noedge/checkpoints/best.pt",
+      "checkpoint_iter": 1000,
+      "weight_bits": 10,
+      "bias_bits": 12,
+      "q_w_min": -466,
+      "q_w_max": 76,
+      "q_b_min": -1989,
+      "q_b_max": -119,
+      "shift_min": 10.0,
+      "shift_max": 10.0,
+      "max_abs_q_w": 466.0,
+      "max_abs_q_b": 1989.0,
+      "q_w_usage": 0.91015625,
+      "q_b_usage": 0.97119140625,
+      "shift_mean": 10.0
+    },
+    "task_qat_w12_b14_noedge": {
+      "kind": "task_qat",
+      "config": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/configs/task_qat_w12_b14_noedge.yaml",
+      "checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/task_qat_w12_b14_noedge/checkpoints/best.pt",
+      "checkpoint_iter": 1000,
+      "weight_bits": 12,
+      "bias_bits": 14,
+      "q_w_min": -1864,
+      "q_w_max": 305,
+      "q_b_min": -7956,
+      "q_b_max": -474,
+      "shift_min": 12.0,
+      "shift_max": 12.0,
+      "max_abs_q_w": 1864.0,
+      "max_abs_q_b": 7956.0,
+      "q_w_usage": 0.91015625,
+      "q_b_usage": 0.97119140625,
+      "shift_mean": 12.0
+    }
+  }
+}

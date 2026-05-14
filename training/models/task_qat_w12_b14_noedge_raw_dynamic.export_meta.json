@@ -1,0 +1,44 @@
+{
+  "source_checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/task_qat_w12_b14_noedge/checkpoints/best.pt",
+  "source_config": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/configs/task_qat_w12_b14_noedge.yaml",
+  "weight_bits": 12,
+  "bias_bits": 14,
+  "downscale_factor": 4,
+  "input": "raw 0..255 Y plane, float32 NCHW shape [N,1,H,W]",
+  "output": "raw 0..255 filtered Y plane, float32 NCHW shape [N,1,H,W]",
+  "raw_io": true,
+  "residual_scale": 1.0,
+  "only_train_y": true,
+  "q_w": {
+    "shape": [
+      16,
+      16,
+      3,
+      3
+    ],
+    "min": -1864,
+    "max": 305,
+    "max_abs": 1864
+  },
+  "q_b": {
+    "shape": [
+      16
+    ],
+    "min": -7956,
+    "max": -474,
+    "max_abs": 7956
+  },
+  "shift": {
+    "shape": [
+      16
+    ],
+    "min": 12,
+    "max": 12,
+    "max_abs": 12
+  },
+  "integer_formula": "delta = round((conv(pixel_unshuffle(Y_raw), q_w) + q_b) / 2^shift)",
+  "residual_formula": "Y_u_out = clip(round(Y_u + residual_scale * delta), 0, 255)",
+  "bias_domain": "q_b is quantized from raw-domain bias_fp_raw = bias_norm * 255",
+  "rounding_note": "PyTorch/ONNX round semantics must match the target runtime for bit-exact deployment.",
+  "note": "ONNX Conv constants are float32 but are frozen from exported int q_w/q_b/shift."
+}

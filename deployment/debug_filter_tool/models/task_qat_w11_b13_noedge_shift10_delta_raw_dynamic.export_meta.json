@@ -1,0 +1,48 @@
+{
+  "source_checkpoint": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/runs/task_qat_w11_b13_noedge_shift10/checkpoints/best.pt",
+  "source_config": "/mnt/d/fudan/prefilter_clean/deliver_w10_b13/configs/task_qat_w11_b13_noedge_shift10.yaml",
+  "model_name": "task_qat_w11_b13_noedge_shift10",
+  "weight_bits": 11,
+  "bias_bits": 13,
+  "downscale_factor": 4,
+  "dummy_export_height": 32,
+  "dummy_export_width": 32,
+  "dynamic_input_shape": true,
+  "input": "raw 0..255 Y block, float32 NCHW shape [N,1,H,W], H/W must be divisible by 4; no input round/clip is applied in ONNX",
+  "output": "raw residual delta_y block, float32 NCHW shape [N,1,H,W]",
+  "onnx_formula": [
+    "Y_u = PixelUnshuffle4(Y)",
+    "acc = Conv2D(Y_u, q_w, q_b)",
+    "delta_u = round(acc / 2^shift)",
+    "delta_y = PixelShuffle4(delta_u)"
+  ],
+  "external_formula": "Y_out_block = clip(round(Y_block + rate_block * delta_y_block), 0, 255)",
+  "q_w": {
+    "shape": [
+      16,
+      16,
+      3,
+      3
+    ],
+    "min": -466,
+    "max": 76,
+    "max_abs": 466
+  },
+  "q_b": {
+    "shape": [
+      16
+    ],
+    "min": -1989,
+    "max": -119,
+    "max_abs": 1989
+  },
+  "shift": {
+    "shape": [
+      16
+    ],
+    "min": 10,
+    "max": 10,
+    "max_abs": 10
+  },
+  "note": "ONNX Conv constants are float32 but their values are frozen integer q_w/q_b. q_w is stored as signed W11 and q_b is stored as signed B13 sidecar values. Input round/clip is intentionally omitted because the runtime feeds uint8 Y converted to float32."
+}
