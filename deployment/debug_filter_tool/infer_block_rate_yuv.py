@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""调试滤波工具 v2：单模型整帧 ONNX residual 推理。
+"""调试滤波工具 v1：单模型整帧 ONNX residual 推理。
 
-默认使用 task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx。
-输入按 8-bit 4:2:0 YUV 解析；脚本只读取 Y，chroma 字节原样透传。
-ONNX 输出 delta_y 后在原始 Y 域加回：
+只内置 task_qat_w10_b12_noedge_delta_raw_dynamic.onnx。
+输入固定按 8-bit NV12 解析，ONNX 输出 delta_y 后在原始 Y 域加回：
 
     Y_out = clip(round(Y + rate * delta_y), 0, 255)
 """
@@ -16,24 +15,23 @@ import numpy as np
 import onnxruntime as ort
 
 
-MODEL_NAME = "task_qat_w11_b13_noedge_shift10"
-MODEL_FILENAME = "task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx"
+MODEL_NAME = "task_qat_w10_b12_noedge"
+MODEL_FILENAME = "task_qat_w10_b12_noedge_delta_raw_dynamic.onnx"
 BITDEPTH = 8
-YUV_FORMAT = "yuv420p"
+YUV_FORMAT = "nv12"
 ORT_PROVIDERS = ["CPUExecutionProvider"]
 
 
 @dataclass(frozen=True)
 class VideoLayout:
-    """一帧 8-bit 4:2:0 YUV 的字节布局。
+    """一帧 8-bit NV12 的字节布局。
 
     dtype:
         Y 平面和 UV 平面的 numpy 数据类型。当前只支持 8-bit，所以固定是 uint8。
     y_bytes:
         一帧 Y 平面的字节数，等于 width * height。
     chroma_bytes:
-        一帧 chroma 字节数。yuv420p/nv12 都是 width * height / 2。
-        当前脚本不解析 chroma 排布，只原样透传。
+        一帧 UV 平面的字节数。NV12 是 4:2:0 交织 UV，所以等于 width * height / 2。
     frame_bytes:
         一整帧的字节数，等于 y_bytes + chroma_bytes。
     """
@@ -51,15 +49,15 @@ def script_root_dir() -> Path:
 
 ROOT_DIR = script_root_dir()
 DEFAULT_INPUT_YUV = ROOT_DIR / "data" / "kaideo_2560x1440_yuv420p_0.yuv"
-DEFAULT_OUTPUT_YUV = ROOT_DIR / "outputs" / f"{DEFAULT_INPUT_YUV.stem}_w11_b13_shift10_rate1.yuv"
+DEFAULT_OUTPUT_YUV = ROOT_DIR / "outputs" / f"{DEFAULT_INPUT_YUV.stem}_rate1.yuv"
 DEFAULT_MODEL_PATH = ROOT_DIR / "models" / MODEL_FILENAME
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fudan prefilter v2 ONNX YUV420 推理工具。")
-    parser.add_argument("--width", "-w", type=int, default=2560, help="输入 YUV 宽度，默认 2560。")
-    parser.add_argument("--height", "-H", type=int, default=1440, help="输入 YUV 高度，默认 1440。")
-    parser.add_argument("--input", "-i", default=str(DEFAULT_INPUT_YUV), help="输入 8-bit 4:2:0 .yuv 路径。")
+    parser = argparse.ArgumentParser(description="Fudan prefilter v1 ONNX NV12 推理工具。")
+    parser.add_argument("--width", "-w", type=int, default=2560, help="输入 NV12 宽度，默认 2560。")
+    parser.add_argument("--height", "-H", type=int, default=1440, help="输入 NV12 高度，默认 1440。")
+    parser.add_argument("--input", "-i", default=str(DEFAULT_INPUT_YUV), help="输入 8-bit NV12 .yuv 路径。")
     parser.add_argument("--output", "-o", default=str(DEFAULT_OUTPUT_YUV), help="输出 .yuv 文件路径。")
     parser.add_argument("--rate", "-r", type=float, default=1.0, help="残差倍率，默认 1。")
     parser.add_argument("--model", default=str(DEFAULT_MODEL_PATH), help="ONNX 模型路径，默认使用内置模型。")
@@ -68,11 +66,11 @@ def parse_args() -> argparse.Namespace:
 
 def get_yuv_layout(width: int, height: int) -> VideoLayout:
     if BITDEPTH != 8:
-        raise ValueError("当前工具只支持 8-bit 4:2:0 YUV。")
+        raise ValueError("当前工具只支持 8-bit NV12。")
     if width <= 0 or height <= 0:
         raise ValueError(f"宽高必须为正数：width={width}, height={height}")
     if width % 2 != 0 or height % 2 != 0:
-        raise ValueError("4:2:0 YUV 要求宽高都是偶数。")
+        raise ValueError("NV12 要求宽高都是偶数。")
 
     y_bytes = width * height
     chroma_bytes = width * height // 2
@@ -82,7 +80,7 @@ def get_yuv_layout(width: int, height: int) -> VideoLayout:
 def get_frame_count(input_yuv: Path, frame_bytes: int) -> int:
     file_bytes = input_yuv.stat().st_size
     if file_bytes % frame_bytes != 0:
-        raise ValueError(f"YUV 文件大小不是完整 4:2:0 帧：file_bytes={file_bytes}, frame_bytes={frame_bytes}")
+        raise ValueError(f"YUV 文件大小不是完整 NV12 帧：file_bytes={file_bytes}, frame_bytes={frame_bytes}")
     return file_bytes // frame_bytes
 
 

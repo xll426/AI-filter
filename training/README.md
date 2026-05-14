@@ -11,7 +11,7 @@ configs/task_qat_w11_b13_noedge_shift10.yaml
 runs/task_qat_w11_b13_noedge_shift10/train_int_qat_config.yaml
 ```
 
-当前部署推荐模型来自：
+当前训练评估中的平衡候选来自：
 
 ```text
 task_qat_w11_b13_noedge_shift10
@@ -21,6 +21,8 @@ test SSIM = 0.969035
 ```
 
 如资源允许并且希望优先追求精度，可参考 `task_qat_w12_b14_noedge_shift11`；如优先压缩位宽，可参考 `task_qat_w10_b12_noedge_shift9`，但它的精度下降更明显。
+
+当前正式 deployment 调试工具对应 `调试滤波工具v1`，默认使用 `task_qat_w10_b12_noedge_delta_raw_dynamic.onnx`。`调试滤波工具v2` 和 `task_qat_w11_b13_noedge_shift10` 作为备用和对照版本保留在部署目录中。
 
 ## 当前 noedge 版本说明
 

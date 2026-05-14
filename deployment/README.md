@@ -2,43 +2,46 @@
 
 本目录包含当前 AI Filter noedge 版本的部署文件，包括 residual ONNX 模型、整数参数 sidecar、导出脚本、一致性验证摘要和整帧 YUV 推理工具。
 
+当前正式提交的部署修正版对应 `调试滤波工具v1`。`调试滤波工具v2` 仅作为备用版本保留，不作为当前默认 deployment。
+
 ## 当前推荐模型
 
-推荐部署模型：
+当前正式部署工具默认模型：
 
 ```text
-models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
-models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
-models/task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
+debug_filter_tool/models/task_qat_w10_b12_noedge_delta_raw_dynamic.onnx
 ```
 
 模型配置：
 
 ```text
-experiment: task_qat_w11_b13_noedge_shift10
-weight bits: W11
-bias bits: B13
-shift: 10
+tool version: 调试滤波工具v1
+experiment: task_qat_w10_b12_noedge
+input format: 8-bit NV12
 训练主线: noedge，不启用 EdgeConsistencyLoss
 评估主线: noedge 最终选型不使用 selective_score
 ```
 
-`noedge` 模型是当前实际部署推荐线。选择原因是实际视频编码后，尤其 QP 较大时，noedge 模型的综合观感和编码后效果更好；未编码前它会相对更接近 reference filtering target。
+`noedge` 是当前实际部署推荐线。选择原因是实际视频编码后，尤其 QP 较大时，noedge 模型的综合观感和编码后效果更好；未编码前它会相对更接近 reference filtering target。
 
 ## 目录结构
 
 ```text
 models/
+  task_qat_w10_b12_noedge_delta_raw_dynamic.onnx
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.onnx
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.int_params.npz
   task_qat_w11_b13_noedge_shift10_delta_raw_dynamic.export_meta.json
   其他对比模型 ONNX
 
 infer_block_rate_yuv.py
-  主推理脚本，整帧 Y 输入 ONNX，输出 residual 后在脚本中加回原始 Y。
+  当前默认推理脚本，来自调试滤波工具v1，固定按 8-bit NV12 解析输入。
 
 debug_filter_tool/
-  精简调试工具，使用同样的整帧推理逻辑。
+  当前正式调试工具，对应调试滤波工具v1。
+
+backup_debug_filter_tool_v2/
+  备用调试工具，对应调试滤波工具v2，不作为当前默认 deployment。
 
 outputs/*/summary.*
   ONNX/PyTorch 一致性验证摘要。
@@ -76,7 +79,7 @@ delta_y = PixelShuffle4(delta_u)
 Y_out = clip(round(Y + rate * delta_y), 0, 255)
 ```
 
-脚本只解析 Y 平面，chroma 字节不参与模型计算并原样透传。对于 8-bit 4:2:0 输入，`yuv420p` 和 `nv12` 的单帧字节数一致，只要宽高和 Y 平面正确，chroma 会按原字节拼回。
+当前正式脚本按 8-bit NV12 计算帧布局，只解析 Y 平面，UV 字节不参与模型计算并原样透传。
 
 ## 推理命令
 
@@ -93,7 +96,7 @@ python infer_block_rate_yuv.py \
   --width 2560 \
   --height 1440 \
   --input data/kaideo_2560x1440_yuv420p_0.yuv \
-  --output outputs/kaideo_2560x1440_yuv420p_0_w11_b13_shift10_rate1.yuv
+  --output outputs/kaideo_2560x1440_yuv420p_0_rate1.yuv
 ```
 
 调整 residual 强度：
@@ -126,4 +129,4 @@ python infer_block_rate_yuv.py \
 | `teacher_qat_w10_b12` | 100 | 0 | 0 |
 | `fudan_fp16` | 100 | 1 | 615 |
 
-当前选定的 `task_qat_w11_b13_noedge_shift10` 是整数 residual ONNX，并配套保存整数参数和导出元数据。训练指标与模型选择细节见 `EVALUATION_SUMMARY.md`。
+当前正式调试工具使用 `task_qat_w10_b12_noedge_delta_raw_dynamic.onnx`。`task_qat_w11_b13_noedge_shift10` 和 `backup_debug_filter_tool_v2/` 作为备用和对照材料保留。训练指标与模型选择细节见 `EVALUATION_SUMMARY.md`。
